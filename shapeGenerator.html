@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+
+			const scene = new THREE.Scene();
+			const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+            scene.add(directionalLight);
+            directionalLight.position.set(0, 50, 0);
+
+            const helper = new THREE.AxesHelper(20);
+            scene.add(helper);
+
+			const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+			const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			const cube = new THREE.Mesh( geometry, material );
+			//scene.add( cube );
+
+			camera.position.z = 5;
+
+            const mouse = new THREE.Vector2();
+            const intersectionPoint = new THREE.Vector3();
+            const planeNormal = new THREE.Vector3();
+            const plane = new THREE.Plane();
+            const raycaster = new THREE.Raycaster();
+
+            window.addEventListener('mousemove', function(e){
+                mouse.x = (e.clientX / window.innerWidth) * 2 -1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                planeNormal.copy(camera.position).normalize();
+                plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
+                raycaster.setFromCamera(mouse, camera);
+                raycaster.ray.intersectPlane(plane, intersectionPoint);
+            });
+
+            window.addEventListener('click', function(e){
+                const sphereGeo = new THREE.SphereGeometry(0.125, 30, 30);
+                const sphereMat = new THREE.MeshStandardMaterial({
+                    color: 0xFFEA00,
+                    metalness: 0,
+                    roughness: 0
+                });
+                const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+                scene.add(sphereMesh);
+                sphereMesh.position.copy(intersectionPoint);
+            });
+
+
+            window.addEventListener('mousedown', function(event) { 
+                // simulating hold event
+                setTimeout(function() {
+                    const sphereGeo = new THREE.SphereGeometry(0.125, 30, 30);
+                    const sphereMat = new THREE.MeshStandardMaterial({
+                        color: 0xFFEA00,
+                        metalness: 0,
+                        roughness: 0
+                    });
+                    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+                    scene.add(sphereMesh);
+                    sphereMesh.position.copy(intersectionPoint);
+                }, 50);
+            });
+
+
+			function animate() {
+				requestAnimationFrame( animate );
+
+				//cube.rotation.x += 0.01;
+				//cube.rotation.y += 0.01;
+             //   commands();
+                raycaster.setFromCamera(mouse, camera);
+				renderer.render( scene, camera );
+			}
+
+            renderer.setAnimationLoop(animate);
+
+            window.addEventListener('resize', function(){
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+			animate();
+		</script>
+
+        <!--<canvas id="canvas"></canvas>-->
+
+	</body>
+</html>
